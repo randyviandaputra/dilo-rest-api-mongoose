@@ -1,49 +1,53 @@
-
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Task = require('./task')
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error('email is invalid')
-      }
-    }
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6,
-    trim: true,
-  },
-  tokens: [{
-      token: {
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error('email is invalid')
+        }
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+      trim: true,
+    },
+    tokens: [
+      {
+        token: {
           type: String,
-          required: true
-      }
-  }],
-  avatar: {
-    type: Buffer
+          required: true,
+        },
+      },
+    ],
+    avatar: {
+      type: Buffer,
+    },
+  },
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-})
+)
 
 userSchema.methods.generateAuthToken = async function() {
   const user = this
-  const token = jwt.sign({ _id: user._id.toString()}, 'my_secret')
+  const token = jwt.sign({ _id: user._id.toString() }, 'my_secret')
 
   user.tokens = user.tokens.concat({ token })
   await user.save()
@@ -54,7 +58,7 @@ userSchema.methods.generateAuthToken = async function() {
 userSchema.virtual('tasks', {
   ref: 'Task',
   localField: '_id',
-  foreignField: 'owner'
+  foreignField: 'owner',
 })
 
 userSchema.statics.findByCredentials = async (email, password) => {
@@ -80,7 +84,7 @@ userSchema.pre('save', async function(next) {
   next()
 })
 
-userSchema.pre('remove', async function (next) {
+userSchema.pre('remove', async function(next) {
   const user = this
   await Task.deleteMany({ owner: user._id })
   next()
