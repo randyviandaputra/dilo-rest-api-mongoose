@@ -1,4 +1,3 @@
-
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 
@@ -9,7 +8,7 @@ const auth = async (req, res, next) => {
     const user = await User.findOne({ _id: decoded._id, 'tokens.token': token })
 
     if (!user) {
-      throw new Error('user not found');
+      throw new Error('user not found')
     }
 
     req.token = token
@@ -17,7 +16,7 @@ const auth = async (req, res, next) => {
     next()
   } catch (e) {
     res.status(401).send({
-      error: 'Please harus login'
+      error: 'Please harus login',
     })
   }
 }
