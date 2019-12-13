@@ -1,27 +1,43 @@
 const mongoose = require('mongoose')
+const validator = require('validator')
 
-const taskSchema = new mongoose.Schema(
-  {
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    completed: {
-      type: Boolean,
-      default: false,
-    },
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'User',
+const User = mongoose.model('User', {
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true,
+    validate(value) {
+      if (!validator.isEmail(value)) {
+        throw new Error('Email is invalid')
+      }
     },
   },
-  {
-    timestamps: true,
-  }
-)
+  password: {
+    type: String,
+    required: true,
+    minlength: 7,
+    trim: true,
+    validate(value) {
+      if (value.toLowerCase().includes('password')) {
+        throw new Error('Password cannot contain "password"')
+      }
+    },
+  },
+  age: {
+    type: Number,
+    default: 0,
+    validate(value) {
+      if (value < 0) {
+        throw new Error('Age must be a postive number')
+      }
+    },
+  },
+})
 
-const Task = mongoose.model('Task', taskSchema)
-
-module.exports = Task
+module.exports = User
